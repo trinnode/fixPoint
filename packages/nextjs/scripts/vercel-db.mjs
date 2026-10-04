@@ -10,6 +10,12 @@
 // port 6543, so both are unwrapped here. Retries cover Neon cold starts.
 
 import { spawnSync } from "node:child_process";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Run the package scripts from the package directory no matter where this
+// file was invoked from, the Vercel build cwd and a local shell differ.
+const pkgRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const pooled = process.env.DATABASE_URL;
 
@@ -31,7 +37,8 @@ console.log(`vercel-db: preparing schema and seed at ${label}`);
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function run(script) {
-  const res = spawnSync(npm, ["run", script, "-w", "@fixpoint/nextjs"], {
+  const res = spawnSync(npm, ["run", script], {
+    cwd: pkgRoot,
     stdio: "inherit",
     env: { ...process.env, DATABASE_URL: direct },
     shell: process.platform === "win32",

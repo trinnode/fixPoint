@@ -23,7 +23,8 @@
     "next:build": "npm run build -w @fixpoint/nextjs",
     "next:lint": "npm run lint -w @fixpoint/nextjs",
     "db:push": "npm run db:push -w @fixpoint/nextjs",
-    "db:seed": "npm run db:seed -w @fixpoint/nextjs"
+    "db:seed": "npm run db:seed -w @fixpoint/nextjs",
+    "vercel:db": "node packages/nextjs/scripts/vercel-db.mjs"
   },
   "engines": {
     "node": ">=20.18.3",

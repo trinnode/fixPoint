@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "buildCommand": "node scripts/vercel-db.mjs && npm run build -w @fixpoint/nextjs",
+  "buildCommand": "npm run vercel:db && npm run build -w @fixpoint/nextjs",
   "outputDirectory": ".next",
   "env": {
     "MIRROR_NODE_URL": "https://testnet.mirrornode.hedera.com/api/v1",

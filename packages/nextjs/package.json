@@ -11,7 +11,8 @@
     "format": "prettier --write \"./**/*.(ts|tsx)\"",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "vercel:db": "node scripts/vercel-db.mjs"
   },
   "dependencies": {
     "@hashgraph/proto": "^2.25.0",

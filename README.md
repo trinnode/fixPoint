@@ -133,7 +133,7 @@ The repo ships a `vercel.json` that builds the monorepo as is. Import `trinnode/
 The schema targets Postgres, so local and live use one provider. Neon is the simplest choice, it is serverless Postgres with pooling built in and a free tier.
 
 1. In Vercel go to Storage, create a Neon database, and connect it to the project.
-2. Set `DATABASE_URL` in the project settings to the pooled URL and deploy. That is all. Every build runs `scripts/vercel-db.mjs`, which derives the direct URL from the pooled one, creates the schema, and seeds the four demo invoices. Both steps are idempotent, so redeploys are safe, and a cold Neon endpoint is retried three times before the deploy is stopped.
+2. Set `DATABASE_URL` in the project settings to the pooled URL and deploy. That is all. Every build runs `npm run vercel:db` first, which derives the direct URL from the pooled one, creates the schema, and seeds the four demo invoices. Both steps are idempotent, so redeploys are safe, and a cold Neon endpoint is retried three times before the deploy is stopped.
 3. Open `/history` on the live URL. The four seeded invoices should be there with agreement markers.
 
 To do the same by hand, from the repo root with the direct (non pooling) URL:
