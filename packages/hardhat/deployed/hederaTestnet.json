@@ -1,0 +1,13 @@
+{
+  "network": "hederaTestnet",
+  "chainId": 296,
+  "contract": "0xD41da4456C08423ab652D011f20f26F19Fd003a5",
+  "pyth": "0xA2aa501b19aff244D90cc15a4Cf739D2725B5729",
+  "priceFeedId": "0x3728e591097635310e6341af53db8b7ee42da9b3a8d918f9463ce9cca886dfbd",
+  "receiptToken": null,
+  "topic": "0.0.10856645",
+  "contractId": "0.0.10856608",
+  "operatorAccount": "0.0.10856592",
+  "buyer": "0xa62c431E3A38da10D50098247D2eB186D8fe2aa5",
+  "deployer": "0xD31258B767E7E66fCF51d52C1395c0BF5C27F820"
+}

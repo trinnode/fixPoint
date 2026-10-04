@@ -24,5 +24,8 @@
     "hardhat": "2.22.19",
     "ts-node": "^10.9.0",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@hiero-ledger/sdk": "^2.89.1"
   }
 }

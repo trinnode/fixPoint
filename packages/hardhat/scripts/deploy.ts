@@ -20,13 +20,14 @@ async function main(): Promise<void> {
     process.env.PYTH_CONTRACT?.trim() ||
     (network.name === "hederaTestnet" ? DEFAULT_PYTH_TESTNET : "");
   if (!pyth) throw new Error("Set PYTH_CONTRACT in packages/hardhat/.env");
-  const feedId = (process.env.PRICE_FEED_ID ?? "").trim();
-  if (!feedId) {
+  const rawFeed = (process.env.PRICE_FEED_ID ?? "").trim();
+  if (!rawFeed) {
     throw new Error(
       "Set PRICE_FEED_ID in packages/hardhat/.env. Resolve the HBAR/USD feed id via:\n" +
         '  curl -s "https://hermes.pyth.network/v2/price_feeds?query=HBAR"'
     );
   }
+  const feedId = rawFeed.startsWith("0x") ? rawFeed : `0x${rawFeed}`;
   const hts = (process.env.HTS_PRECOMPILE ?? "").trim() || ethers.ZeroAddress;
 
   const escrow: any = await ethers.deployContract("FixpointEscrow", [pyth, feedId, hts]);

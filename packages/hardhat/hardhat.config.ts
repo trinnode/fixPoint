@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545",
     },
     hederaTestnet: {
-      url: "https://testnet.hashio.io",
+      url: "https://testnet.hashio.io/api/v1",
       chainId: 296,
       accounts: operatorAccounts(),
     },
