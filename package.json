@@ -9,7 +9,7 @@
     "packages/nextjs"
   ],
   "scripts": {
-    "postinstall": "npm run db:generate -w @fixpoint/nextjs",
+    "prepare": "npm run db:generate -w @fixpoint/nextjs",
     "dev": "npm run dev -w @fixpoint/nextjs",
     "build": "npm run build -w @fixpoint/nextjs",
     "start": "npm run start -w @fixpoint/nextjs",
