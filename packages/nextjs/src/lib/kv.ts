@@ -1,6 +1,6 @@
 // Small key value store used for monotonic counters: invoice reference
-// numbers, NFT serials and the HCS topic sequence number. SQLite does the
-// atomicity.
+// numbers, NFT serials and the HCS topic sequence number. The database does
+// the atomicity.
 
 import { db } from "./db";
 

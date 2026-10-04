@@ -26,6 +26,20 @@ jobs:
 
   smoke:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fixpoint
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,13 +52,13 @@ jobs:
       - run: cp .env.example packages/nextjs/.env
       - run: npm run db:push -w @fixpoint/nextjs
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fixpoint
       - run: npm run db:seed -w @fixpoint/nextjs
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fixpoint
       - run: npm run start -w @fixpoint/nextjs &
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fixpoint
           PORT: "3000"
       - run: sleep 8
       - run: curl -fsS http://localhost:3000/ > /dev/null

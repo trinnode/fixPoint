@@ -31,7 +31,7 @@
             },
             {
               "label": "Copy the env files",
-              "text": "Run cp .env.example packages/nextjs/.env and cp .env.example packages/hardhat/.env, then set DATABASE_URL in the frontend env to file:./dev.db"
+              "text": "Run cp .env.example packages/nextjs/.env and cp .env.example packages/hardhat/.env, then set DATABASE_URL in the frontend env to your Postgres URL and run npm run db:push and npm run db:seed"
             },
             {
               "label": "Create the local demo database",
@@ -71,7 +71,7 @@
       },
       {
         "key": "DATABASE_URL",
-        "description": "SQLite file for the local demo ledger (no database in the deployed template)"
+        "description": "Postgres connection string for the demo ledger, direct URL for db push, pooled URL at runtime"
       },
       {
         "key": "PYTH_HERMES_KEY",

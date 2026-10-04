@@ -41,4 +41,4 @@ HCS is an ordered, timestamped log, not a database. Queries run against the mirr
 
 ## Demo ledger
 
-The Next.js demo stores the same facts in SQLite: invoices, events, receipts and audit messages. `invoices.ts` mirrors the contract function for function, including access control and the pricing maths. It exists so the flow runs without a live network. It is not part of the deployed pattern. Do not mistake its transaction hashes for Hedera transactions.
+The Next.js demo stores the same facts in Postgres: invoices, events, receipts and audit messages. `invoices.ts` mirrors the contract function for function, including access control and the pricing maths. It exists so the flow runs without a live network. It is a convenience, not the system of record. Do not mistake its transaction hashes for Hedera transactions.

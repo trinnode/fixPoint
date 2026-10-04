@@ -18,7 +18,13 @@ const HBAR_QUERY = "HBAR";
 function hermesHeaders(): Record<string, string> {
   const h: Record<string, string> = { Accept: "application/json" };
   const key = process.env.PYTH_HERMES_KEY;
-  if (key) h["x-api-key"] = key;
+  // Hermes requires an API key since the August 2026 Pyth Core upgrade. Send
+  // both header spellings so the client works against hermes.pyth.network and
+  // the dourolabs drop-in instance either way.
+  if (key) {
+    h["Authorization"] = `Bearer ${key}`;
+    h["x-api-key"] = key;
+  }
   return h;
 }
 

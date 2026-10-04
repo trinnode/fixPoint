@@ -72,7 +72,7 @@ npm run db:seed
 npm run dev
 ```
 
-`db:push` runs a plain `prisma db push`. That is fine for the local SQLite demo. Do not run it against a real database. `lint` runs ESLint on the frontend and `tsc --noEmit` on the contracts. `check-types` typechecks the frontend. There are 43 Hardhat unit tests and no frontend unit tests yet. The build passes with an empty environment.
+`db:push` runs a plain `prisma db push` against `DATABASE_URL`. The schema targets Postgres. Use the direct (non pooling) URL for push and seed, and the pooled URL at runtime on Vercel. `lint` runs ESLint on the frontend and `tsc --noEmit` on the contracts. `check-types` typechecks the frontend. There are 43 Hardhat unit tests and no frontend unit tests yet. The build passes with an empty environment.
 
 ## Invariants you must not break
 

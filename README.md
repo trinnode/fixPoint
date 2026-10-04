@@ -81,7 +81,7 @@ flowchart LR
   W -->|verify then publish| T[HCS audit topic]
 ```
 
-The chain is the source of truth. The relayer only audits what the mirror node confirms. HCS is the tamper evident log, never the database. The local SQLite ledger mirrors these facts so the demo runs offline. Full version: [`docs/architecture.md`](docs/architecture.md). Threats and limits: [`docs/threat-model.md`](docs/threat-model.md), [`SECURITY.md`](SECURITY.md).
+The chain is the source of truth. The relayer only audits what the mirror node confirms. HCS is the tamper evident log, never the database. The Postgres demo ledger mirrors these facts so the demo runs the same online and offline. Full version: [`docs/architecture.md`](docs/architecture.md). Threats and limits: [`docs/threat-model.md`](docs/threat-model.md), [`SECURITY.md`](SECURITY.md).
 
 ## Project layout
 
@@ -91,7 +91,7 @@ fixpoint/
 ├── packages/hardhat/              FixpointEscrow.sol, deploy + demo scripts, 43 tests
 │   └── deployed/                  live addresses, no secrets ever
 └── packages/nextjs/               app, API routes, wallet integration, demo ledger
-    └── prisma/                    local SQLite schema, demo only
+    └── prisma/                    Postgres demo ledger schema, demo only
 ```
 
 Agent instructions: [`AGENTS.md`](AGENTS.md). Contract ops: [`packages/hardhat/README.md`](packages/hardhat/README.md).
@@ -130,9 +130,9 @@ The repo ships a `vercel.json` that builds the monorepo as is. Import `trinnode/
 
 ### Data setup for production
 
-SQLite cannot run on serverless, the filesystem is ephemeral. Use Postgres for the live site.
+The schema targets Postgres, so local and live use one provider. Neon is the simplest choice, it is serverless Postgres with pooling built in and a free tier.
 
-1. In Vercel go to Storage, create a Postgres database, and connect it to the project. Copy both the pooled URL and the direct (non pooling) URL.
+1. In Vercel go to Storage, create a Neon database, and connect it to the project. Copy both the pooled URL and the direct (non pooling) URL.
 2. On your machine, point at the direct URL and create the tables plus the seed data. From the repo root:
 
    ```
@@ -140,7 +140,7 @@ SQLite cannot run on serverless, the filesystem is ephemeral. Use Postgres for t
    DATABASE_URL="<direct url>" npm run db:seed
    ```
 
-   The seed is idempotent, so running it twice is safe. If your schema still says `sqlite`, change the provider line in `packages/nextjs/prisma/schema.prisma` to `postgresql` first. Keep `sqlite` for local work.
+   The seed is idempotent, so running it twice is safe. Prisma needs the direct URL for `db push`, the pooler does not support DDL.
 3. In the Vercel project settings set `DATABASE_URL` to the pooled URL and redeploy. Open `/history` on the live URL. The four seeded invoices should be there with agreement markers.
 
 Wallet mode works on the live URL as soon as the contract address and topic id are set. Demo mode works too, reading the Postgres ledger instead of a local file.
@@ -151,7 +151,7 @@ Copy `.env.example` to `packages/nextjs/.env` for the app and `packages/hardhat/
 
 | Name | Needed for | Example |
 | --- | --- | --- |
-| `DATABASE_URL` | Demo ledger | `file:./dev.db` |
+| `DATABASE_URL` | Demo ledger | `postgresql://...`, direct URL for push, pooled for runtime |
 | `NEXT_PUBLIC_WC_PROJECT_ID` | Wallet pairing | Reown project id |
 | `NEXT_PUBLIC_CONTRACT_ADDRESS` | Wallet reads and writes | `0xD41d...` (defaults to the live deployment) |
 | `NEXT_PUBLIC_RECEIPT_TOKEN_ID` | Pay with mint | `0.0.x` when the collection exists |
@@ -187,7 +187,7 @@ Swap the feed by changing the Hermes query and redeploying with the new feed id.
 | Pay reverts as stale | Hermes key missing or keeper quiet, retry on a fresh quote |
 | Wallet will not pair | Set `NEXT_PUBLIC_WC_PROJECT_ID`, confirm HashPack is on testnet |
 | Mirror data lags | Wait a few seconds, history polls with backoff |
-| `DATABASE_URL` missing | Copy the example env, set `file:./dev.db`, run `db:push` |
+| `DATABASE_URL` missing | Set a Postgres URL in the env, run `db:push` and `db:seed` |
 
 ## License and credits
 
