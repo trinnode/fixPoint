@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build -w @fixpoint/nextjs",
+  "outputDirectory": "packages/nextjs/.next",
+  "env": {
+    "MIRROR_NODE_URL": "https://testnet.mirrornode.hedera.com/api/v1",
+    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0xD41da4456C08423ab652D011f20f26F19Fd003a5",
+    "NEXT_PUBLIC_HCS_TOPIC_ID": "0.0.10856645"
+  }
+}

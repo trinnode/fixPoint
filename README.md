@@ -116,6 +116,35 @@ All from the repo root with npm.
 
 CI runs install, compile, test, lint, types, and build on Node 20 and 22, plus a boot smoke test that curls every core route.
 
+## Deploy to Vercel
+
+The repo ships a `vercel.json` that builds the monorepo as is. Import `trinnode/fixPoint` in Vercel and deploy. No Root Directory change needed. Set the environment variables in the project settings **before** the first deploy, because `NEXT_PUBLIC_` values are baked in at build time.
+
+| Name | Value |
+| --- | --- |
+| `DATABASE_URL` | The pooled Postgres URL from Vercel Storage (see data setup below) |
+| `NEXT_PUBLIC_CONTRACT_ADDRESS` | `0xD41da4456C08423ab652D011f20f26F19Fd003a5` |
+| `NEXT_PUBLIC_HCS_TOPIC_ID` | `0.0.10856645` |
+| `NEXT_PUBLIC_WC_PROJECT_ID` | Your Reown project id for HashPack pairing |
+| `PYTH_HERMES_KEY` | Your Pyth key for live prices, otherwise the app shows the labelled seed |
+
+### Data setup for production
+
+SQLite cannot run on serverless, the filesystem is ephemeral. Use Postgres for the live site.
+
+1. In Vercel go to Storage, create a Postgres database, and connect it to the project. Copy both the pooled URL and the direct (non pooling) URL.
+2. On your machine, point at the direct URL and create the tables plus the seed data. From the repo root:
+
+   ```
+   DATABASE_URL="<direct url>" npm run db:push
+   DATABASE_URL="<direct url>" npm run db:seed
+   ```
+
+   The seed is idempotent, so running it twice is safe. If your schema still says `sqlite`, change the provider line in `packages/nextjs/prisma/schema.prisma` to `postgresql` first. Keep `sqlite` for local work.
+3. In the Vercel project settings set `DATABASE_URL` to the pooled URL and redeploy. Open `/history` on the live URL. The four seeded invoices should be there with agreement markers.
+
+Wallet mode works on the live URL as soon as the contract address and topic id are set. Demo mode works too, reading the Postgres ledger instead of a local file.
+
 ## Environment
 
 Copy `.env.example` to `packages/nextjs/.env` for the app and `packages/hardhat/.env` for chain scripts. Every value ships empty and the build passes that way.
