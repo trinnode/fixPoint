@@ -132,16 +132,18 @@ The repo ships a `vercel.json` that builds the monorepo as is. Import `trinnode/
 
 The schema targets Postgres, so local and live use one provider. Neon is the simplest choice, it is serverless Postgres with pooling built in and a free tier.
 
-1. In Vercel go to Storage, create a Neon database, and connect it to the project. Copy both the pooled URL and the direct (non pooling) URL.
-2. On your machine, point at the direct URL and create the tables plus the seed data. From the repo root:
+1. In Vercel go to Storage, create a Neon database, and connect it to the project.
+2. Set `DATABASE_URL` in the project settings to the pooled URL and deploy. That is all. Every build runs `scripts/vercel-db.mjs`, which derives the direct URL from the pooled one, creates the schema, and seeds the four demo invoices. Both steps are idempotent, so redeploys are safe, and a cold Neon endpoint is retried three times before the deploy is stopped.
+3. Open `/history` on the live URL. The four seeded invoices should be there with agreement markers.
 
-   ```
-   DATABASE_URL="<direct url>" npm run db:push
-   DATABASE_URL="<direct url>" npm run db:seed
-   ```
+To do the same by hand, from the repo root with the direct (non pooling) URL:
 
-   The seed is idempotent, so running it twice is safe. Prisma needs the direct URL for `db push`, the pooler does not support DDL.
-3. In the Vercel project settings set `DATABASE_URL` to the pooled URL and redeploy. Open `/history` on the live URL. The four seeded invoices should be there with agreement markers.
+```
+DATABASE_URL="<direct url>" npm run db:push
+DATABASE_URL="<direct url>" npm run db:seed
+```
+
+Prisma needs the direct URL for `db push`, the pooler does not support DDL.
 
 Wallet mode works on the live URL as soon as the contract address and topic id are set. Demo mode works too, reading the Postgres ledger instead of a local file.
 
