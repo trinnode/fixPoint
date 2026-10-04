@@ -3,7 +3,7 @@ import { join } from "path";
 import { ethers, network } from "hardhat";
 import * as dotenv from "dotenv";
 
-dotenv.config({ path: __dirname + "/.env" });
+dotenv.config({ path: __dirname + "/../.env" });
 
 // Documented Pyth receiver on Hedera testnet.
 // Source: Pyth docs "Contract Addresses / on EVM Networks / Testnets" row

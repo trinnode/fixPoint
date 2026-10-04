@@ -30,6 +30,10 @@
               "command": "{run:hardhat:test}"
             },
             {
+              "label": "Copy the env files",
+              "text": "Run cp .env.example packages/nextjs/.env and cp .env.example packages/hardhat/.env, then set DATABASE_URL in the frontend env to file:./dev.db"
+            },
+            {
               "label": "Create the local demo database",
               "command": "{run:db:push}"
             },

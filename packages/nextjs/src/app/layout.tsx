@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Space_Grotesk, Figtree, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,24 +7,26 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { SiteShell } from "@/components/site-shell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Space_Grotesk({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sans = Figtree({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const mono = IBM_Plex_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "Fixpoint — USD priced escrow on Hedera",
+  title: "Fixpoint: USD priced escrow on Hedera",
   description:
     "Price an invoice in dollars. Settle it in HBAR at a live Pyth oracle rate. Mint an HTS receipt and prove every step on an HCS audit topic.",
   keywords: ["Hedera", "HBAR", "Pyth", "escrow", "HTS", "HCS", "Fixpoint"],
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Fixpoint",
     description:
-      "USD priced escrow, settled in HBAR, proven on HCS. A scaffold-hbar template.",
+      "USD priced escrow, settled in HBAR, proven on HCS. A scaffold hbar template.",
     type: "website",
   },
 };
@@ -48,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased bg-background text-foreground`}
+        className={`${display.variable} ${sans.variable} ${mono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

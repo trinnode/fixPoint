@@ -14,7 +14,7 @@ export function AddressChip({
   className?: string;
 }) {
   if (!address) {
-    return <span className="text-muted-foreground">—</span>;
+    return <span className="text-muted-foreground">…</span>;
   }
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>

@@ -7,7 +7,7 @@ const META: Record<InvoiceState, { label: string; detail: string }> = {
   PAID: { label: "Paid", detail: "Funds held in escrow" },
   RELEASED: { label: "Released", detail: "Funds sent to the seller" },
   REFUNDED: { label: "Refunded", detail: "Funds returned to the buyer" },
-  EXPIRED: { label: "Expired", detail: "Pay-by date passed unpaid" },
+  EXPIRED: { label: "Expired", detail: "Pay by date passed unpaid" },
 };
 
 const ORB: Record<InvoiceState, string> = {
@@ -25,7 +25,6 @@ type StateOrbProps = {
 
 /**
  * Canvas-free CSS 3D orb reflecting invoice state colour, with legend text.
- * Deliberately unwired — the orchestrator wires it into pages later.
  */
 export function StateOrb({ state, className }: StateOrbProps) {
   const m = META[state];

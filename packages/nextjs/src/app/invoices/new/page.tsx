@@ -97,14 +97,14 @@ export default function NewInvoicePage() {
     const cents = Math.round(parseFloat(amount) * 100);
     if (!Number.isFinite(cents) || cents <= 0) e.amount = "Enter an amount greater than zero";
     if (cents > 100_000_000) e.amount = "Amount exceeds the $1,000,000 demo limit";
-    if (!payBy) e.payBy = "Pick a pay-by date";
+    if (!payBy) e.payBy = "Pick a pay by date";
     else if (Math.floor(new Date(payBy).getTime() / 1000) <= Math.floor(Date.now() / 1000)) {
-      e.payBy = "Pay-by date must be in the future";
+      e.payBy = "Pay by date must be in the future";
     }
     if (delivery) {
       const d = Math.floor(new Date(delivery).getTime() / 1000);
       const p = Math.floor(new Date(payBy).getTime() / 1000);
-      if (d <= p) e.delivery = "Delivery deadline must be after the pay-by date";
+      if (d <= p) e.delivery = "Delivery deadline must be after the pay by date";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -113,14 +113,32 @@ export default function NewInvoicePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <header className="mb-8">
+        <ol className="mb-5 flex flex-wrap items-center gap-2" aria-label="Progress">
+          {["1 Invoice details", "2 Pay at rate", "3 Settle and prove"].map((s, i) => (
+            <li
+              key={s}
+              className={
+                i === 0
+                  ? "rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground"
+                  : "rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
+              }
+              aria-current={i === 0 ? "step" : undefined}
+            >
+              {s}
+            </li>
+          ))}
+        </ol>
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           New invoice
         </p>
         <h1 className="mt-1 font-display text-3xl font-medium tracking-tight text-foreground">
           Price in dollars
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          The seller sets a price in cents, a pay-by date and a review window.
+        <p className="mt-2 text-sm font-medium text-foreground">
+          Takes about a minute. The buyer pays next.
+        </p>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          The seller sets a price in cents, a pay by date and a review window.
           The buyer will pay HBAR at the live Pyth rate shown here.
         </p>
       </header>
@@ -152,7 +170,7 @@ export default function NewInvoicePage() {
             </div>
             {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
             <p className="text-[11px] text-muted-foreground">
-              Stored as {usdCents > 0 ? usdCents.toLocaleString() : "—"} cents.
+              Stored as {usdCents > 0 ? usdCents.toLocaleString() : "…"} cents.
             </p>
           </div>
 
@@ -238,7 +256,7 @@ export default function NewInvoicePage() {
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">Live quote</h2>
               <span className="text-[11px] text-muted-foreground">
-                {quoteLoading ? "refreshing…" : quote ? `via ${quote.source}` : "—"}
+                {quoteLoading ? "refreshing…" : quote ? `via ${quote.source}` : "…"}
               </span>
             </div>
             {quoteError ? (

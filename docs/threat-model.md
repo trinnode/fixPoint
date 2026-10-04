@@ -10,7 +10,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Impact.** A buyer pays less HBAR than the dollar amount is worth at the current rate. The seller is short changed.
 
-**Mitigation.** `computeQuote` in `src/lib/pyth.ts` rejects any price whose age exceeds `MAX_STALENESS_SEC` (60 seconds) with `PRICE_REJECTED`. The constant is exported from `src/lib/hedera.ts` and mirrored in the contract. The pay route propagates the rejection as a `PRICE_REJECTED` `EscrowError`. The buyer cannot pay through the route until a fresh price is available.
+**Mitigation.** `computeQuote` in `packages/nextjs/src/lib/pyth.ts` rejects any price whose age exceeds `MAX_STALENESS_SEC` (60 seconds) with `PRICE_REJECTED`. The constant is exported from `packages/nextjs/src/lib/hedera.ts` and mirrored in the contract. The pay route propagates the rejection as a `PRICE_REJECTED` `EscrowError`. The buyer cannot pay through the route until a fresh price is available.
 
 **Residual risk.** A Pyth feed that goes wrong inside the 60 second window. The contract can only act on what the oracle published. A fast move of more than the confidence bound is caught by threat 2. A fast move inside both bounds is not caught.
 
@@ -20,7 +20,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Impact.** A buyer pays less HBAR than the dollar amount is worth at the mid price. The seller is short changed.
 
-**Mitigation.** `computeQuote` in `src/lib/pyth.ts` computes the confidence in basis points as `conf * 10_000 / price` and rejects anything above `MAX_CONF_BPS` (100 basis points) with `PRICE_REJECTED`. The constant is exported from `src/lib/hedera.ts` and mirrored in the contract.
+**Mitigation.** `computeQuote` in `packages/nextjs/src/lib/pyth.ts` computes the confidence in basis points as `conf * 10_000 / price` and rejects anything above `MAX_CONF_BPS` (100 basis points) with `PRICE_REJECTED`. The constant is exported from `packages/nextjs/src/lib/hedera.ts` and mirrored in the contract.
 
 **Residual risk.** A confidence that is wide in absolute terms but narrow in basis points on a high price. The contract trusts Pyth's own confidence figure. A publisher that misreports confidence is outside the contract's control.
 
@@ -40,7 +40,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Impact.** The audit trail diverges from the chain. A reader who trusts the audit trail alone is misled. A reader who compares the audit trail to the chain sees the disagreement.
 
-**Mitigation.** `POST /api/audit` in `src/app/api/audit/route.ts` only accepts a `txHash` string. It does not accept a payload. The payload is built inside `publishAudit` in `src/lib/invoices.ts` from the chain event and the invoice. The route looks the event up first; if no event matches the hash, it returns 404. The route deduplicates by tx hash: a second publish for the same hash returns the existing sequence number and writes nothing. The relayer cannot invent a chain event, and it cannot rewrite the payload for a given event.
+**Mitigation.** `POST /api/audit` in `packages/nextjs/src/app/api/audit/route.ts` only accepts a `txHash` string. It does not accept a payload. The payload is built inside `publishAudit` in `packages/nextjs/src/lib/invoices.ts` from the chain event and the invoice. The route looks the event up first; if no event matches the hash, it returns 404. The route deduplicates by tx hash: a second publish for the same hash returns the existing sequence number and writes nothing. The relayer cannot invent a chain event, and it cannot rewrite the payload for a given event.
 
 **Residual risk.** A compromised relayer operator key in the real template can sign and publish a misleading message directly to HCS, bypassing the route. That message will not match any chain event and the disagreement will be visible on the history page. The held funds are unaffected.
 
@@ -60,7 +60,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Impact.** The seller's invoice is not paid. The seller's time is wasted.
 
-**Mitigation.** The check is in `payInvoice` in `src/lib/invoices.ts`. If the `buyer_associated` flag is not set, the route returns `RECEIPT_NOT_ASSOCIATED`. The invoice is unaffected. The pay by date still applies. When it passes, the seller (or anyone) can call `POST /api/invoices/[id]/expire` and the invoice moves to EXPIRED. No funds are stuck because no funds were ever taken.
+**Mitigation.** The check is in `payInvoice` in `packages/nextjs/src/lib/invoices.ts`. If the `buyer_associated` flag is not set, the route returns `RECEIPT_NOT_ASSOCIATED`. The invoice is unaffected. The pay by date still applies. When it passes, the seller (or anyone) can call `POST /api/invoices/[id]/expire` and the invoice moves to EXPIRED. No funds are stuck because no funds were ever taken.
 
 **Residual risk.** The wasted time of the seller. This is the same risk as any unpaid invoice. There is no on chain way to force a buyer to associate.
 
@@ -72,7 +72,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Mitigation.** None in this preview. The brief lists a pull style refund pattern as future work. The seller would call a withdraw function and the contract would attempt the transfer once. That is not implemented here.
 
-**Residual risk.** A seller who uses a contract wallet that rejects HBAR cannot be paid. The funds remain in escrow until the seller fixes the wallet, or until the buyer reclaims after a missed delivery deadline (see `claimRefundIfExpired` in `src/lib/invoices.ts`). The seller should test their wallet before relying on Fixpoint.
+**Residual risk.** A seller who uses a contract wallet that rejects HBAR cannot be paid. The funds remain in escrow until the seller fixes the wallet, or until the buyer reclaims after a missed delivery deadline (see `claimRefundIfExpired` in `packages/nextjs/src/lib/invoices.ts`). The seller should test their wallet before relying on Fixpoint.
 
 ## 8. Rounding bias
 
@@ -80,7 +80,7 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Impact.** Rounding down would let a buyer pay a rounding dust less than the dollar amount at the published rate. Rounding to nearest would let a buyer underpay half the time. The contract rounds **up** in favour of the seller, so the buyer pays a rounding dust more.
 
-**Mitigation.** `computeQuote` in `src/lib/pyth.ts` computes `hbarWei = ceil(usdCents * 10^18 / (100 * price * 10^expo))`. The numerator and denominator are scaled to keep the division integer. The choice is documented in `SECURITY.md` and in the code. The buyer's dust is returned as part of the overpayment refund when the buyer sends more than the quoted total.
+**Mitigation.** `computeQuote` in `packages/nextjs/src/lib/pyth.ts` computes `hbarWei = ceil(usdCents * 10^18 / (100 * price * 10^expo))`. The numerator and denominator are scaled to keep the division integer. The choice is documented in `SECURITY.md` and in the code. The buyer's dust is returned as part of the overpayment refund when the buyer sends more than the quoted total.
 
 **Residual risk.** The buyer pays a rounding dust more per invoice. The dust is at most one weibar. The overpayment refund handles the case where the buyer sends more than the quoted total.
 
@@ -98,8 +98,8 @@ This preview simulates the on chain parts. The simulation is faithful to the con
 
 **Description.** This preview runs the same maths, the same state machine and the same audit pattern as the deployed template, but the on chain parts are simulated. No transaction reaches a real Hedera network in this preview.
 
-**Impact.** A reader who treats the preview as a real deployment will be misled. The contract address, the receipt token id and the topic id in `src/lib/hedera.ts` are demo constants. The HCS signature is a sha256 digest, not an Ed25519 signature.
+**Impact.** A reader who treats the preview as a real deployment will be misled. The contract address, the receipt token id and the topic id in `packages/nextjs/src/lib/hedera.ts` are demo constants. The HCS signature is a sha256 digest, not an Ed25519 signature.
 
-**Mitigation.** The UI labels the price source (`hermes`, `cached`, `seed`) and never hides it. The README, AGENTS and SECURITY files state the simulation plainly. The relayer route in `src/app/api/audit/route.ts` builds the audit payload from the local database, but the shape and the idempotency are the same as in the real template.
+**Mitigation.** The UI labels the price source (`hermes`, `cached`, `seed`) and never hides it. The README, AGENTS and SECURITY files state the simulation plainly. The relayer route in `packages/nextjs/src/app/api/audit/route.ts` builds the audit payload from the local database, but the shape and the idempotency are the same as in the real template.
 
 **Residual risk.** A fork that strips the labels and ships the preview as a real deployment. Do not do this. Get a third party security review on the contract, the relayer and the operator key handling before you ship anything that moves real value.

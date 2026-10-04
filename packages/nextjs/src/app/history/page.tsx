@@ -192,7 +192,7 @@ function EventRow({
         <AddressChip address={row.counter} />
       </td>
       <td className="px-4 py-3 text-right tabular-nums text-foreground">
-        {row.amountWei && row.amountWei !== "0" ? formatHbar(row.amountWei) : "—"}
+        {row.amountWei && row.amountWei !== "0" ? formatHbar(row.amountWei) : "…"}
       </td>
       <td className="px-4 py-3">
         <HashBadge hash={row.txHash} href={hashscanUrl(`transactions/${row.txHash}`)} />

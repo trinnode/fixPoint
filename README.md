@@ -1,212 +1,224 @@
 # Fixpoint
 
+![Fixpoint mark](packages/nextjs/public/logo.svg)
+
 USD priced escrow, three Hedera services composed, Pyth oracle, tested, documented, one command.
 
-Fixpoint is a small, opinionated escrow that prices work in dollars and settles in HBAR. A seller files an invoice for a USD amount. A buyer pays it at the live HBAR/USD rate from the Pyth oracle. The escrow contract holds the HBAR, mints an HTS NFT receipt to the buyer, and writes every state change to an HCS audit topic. The dollar amount never moves. Only HBAR does, and only at the rate the oracle published. This preview runs the same maths, the same state machine, and the same audit pattern as the deployed template, but on a local database so it is reproducible without a live network.
+Fixpoint is a template for escrow payments on Hedera where the price is set in dollars and the settlement happens in HBAR. A seller creates an invoice for a USD amount. A buyer pays it in HBAR at the live HBAR USD rate published by the Pyth oracle. The escrow contract holds the HBAR, mints an HTS NFT receipt to the buyer, and every state change is written to an HCS audit topic that a mirror node powered history view reads back. The dollar amount never moves. Only HBAR moves, and only at the oracle rate, with safety bounds that reject stale or loose prices.
 
-This repository is the running preview of the Fixpoint template's frontend and relayer logic. The real template is produced by:
+Scaffold it with one command:
 
 ```
-npm create scaffold-hbar@latest -- --template <owner>/fixpoint
+npm create scaffold-hbar@latest -- --template trinnode/fixPoint
 ```
 
-That scaffold ships the Solidity contract, the deploy script, the relayer service and this Next.js app. Here you get the app and the relayer route, with the on chain parts simulated honestly and labelled as such.
+Note the `--` before `--template`. npm needs it to pass the flag through to the CLI. Without it, npm consumes the flag and you get the default template.
 
 ## Run it in 5 minutes
 
-You need Node 20 or newer, or Bun. The preview is a Next.js 16 app.
+You need Node 20.18.3 or newer and npm 10 or newer. No other toolchain. The build passes with an empty environment. Secrets are read lazily at runtime only.
 
-1. Install dependencies.
+1. Get the code, either through the scaffold command above or by cloning this repo.
 
-   ```
-   bun install
-   ```
-
-2. Create the local database. The schema is in `prisma/schema.prisma`. The default `DATABASE_URL` points at a SQLite file.
+2. Install dependencies from the repo root.
 
    ```
-   bun run db:push
+   npm install
    ```
 
-3. Seed the demo ledger. The seed is idempotent. It creates four invoices that together exercise every state and every audit message.
+3. Set up the local demo ledger. The Next.js app reads its environment from `packages/nextjs/.env`, and the Hardhat scripts read theirs from `packages/hardhat/.env`. Copy the example file to both places, then set the database URL in the frontend env to a local SQLite file.
 
    ```
-   bun run scripts/seed.ts
+   cp .env.example packages/nextjs/.env
+   cp .env.example packages/hardhat/.env
    ```
 
-4. Start the dev server.
+   In `packages/nextjs/.env`, set `DATABASE_URL` to `file:./dev.db`. Then create the tables. The root script delegates to the frontend package.
 
    ```
-   bun run dev
+   npm run db:push
    ```
 
-The app listens on port 3000. Open the **Preview Panel** in your workspace to use it. Do not open `http://localhost:3000` directly; the preview is the supported entry point.
+4. Seed the demo ledger. The seed is idempotent. It creates four invoices that together exercise every state, plus their audit messages.
 
-### Environment variables
+   ```
+   npm run db:seed
+   ```
 
-Copy `.env.example` to `.env` and fill in what you have. The build and the lint pass with every value empty. Secrets are read lazily at runtime only.
+5. Start the app.
 
-| Name | Required | Where used | Example |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | Yes | `prisma/schema.prisma`, `src/lib/db.ts` | `file:/home/z/my-project/db/custom.db` |
-| `PYTH_HERMES_KEY` | No | `src/lib/pyth.ts` (sent as `x-api-key` to Hermes) | `pyth-…` |
-| `HEDERA_OPERATOR_ID` | No | relayer route, signing HCS (real template only) | `0.0.1234` |
-| `HEDERA_OPERATOR_KEY` | No | relayer route, signing HCS (real template only) | `0x…` (ECDSA) or `302…` (Ed25519) |
-| `HCS_TOPIC_ID` | No | overrides the committed topic in `src/lib/hedera.ts` | `0.0.5847294` |
-| `RECEIPT_TOKEN_ID` | No | overrides the committed token in `src/lib/hedera.ts` | `0.0.5847293` |
-| `MIRROR_NODE_URL` | No | overrides the committed mirror in `src/lib/hedera.ts` | `https://testnet.mirrornode.hedera.com/api/v1` |
+   ```
+   npm run dev
+   ```
 
-The committed constants in `src/lib/hedera.ts` (contract `0xC2a7B4Ecf4E0f3C5c67a89B1c0dE2f3A4b5C6d7E`, receipt token `0.0.5847293`, topic `0.0.5847294`, chain id 296 testnet) are demo values used throughout the UI. They are not a real deployment and the docs treat them as such.
+Open `http://localhost:3000`. The home page shows the live price card with its source label, the four step flow, and the honesty note. Create an invoice as the seller on `/invoices/new`. Switch to the buyer role in the header, associate the receipt token, pay at the live quote, then switch back and release. Open `/history` to see chain events beside their HCS audit messages, with agreement markers where the two match.
 
-## Reproduce a transaction
+## Reproduce the testnet transaction
 
-The seed creates four invoices. They appear on the home page and on `/history`.
+The template ships a deploy script and a demo flow script in `packages/hardhat/scripts`. Fund an ECDSA testnet account from the Hedera Portal faucet first, then export it. Never commit these values.
 
-| Invoice | Memo | State |
-| --- | --- | --- |
-| #1001 | Design sprint deliverable, March | CREATED |
-| #1002 | Brand audit report | PAID |
-| #1003 | Smart contract review and advisory | RELEASED |
-| #1004 | Workshop deposit, refunded after reschedule | REFUNDED |
+```
+export HEDERA_OPERATOR_ID=0.0.xxxxxx
+export HEDERA_OPERATOR_KEY=0x...
+export PRICE_FEED_ID=<HBAR USD feed id from Hermes>
+npm run hardhat:deploy
+npm run demo -- --network hederaTestnet
+```
 
-To run a full flow yourself:
-
-1. Open `/invoices/new` as the seller (use the role switcher in the header). Set an amount in dollars, a pay by date, and a review window. Submit. The invoice is created with the `Created` event.
-2. Switch to the buyer role. Open `/invoices/[id]`. If you have not associated the receipt token, the actions panel will tell you. Press **Associate**. This calls `POST /api/association`, which flips the `buyer_associated` flag in the key value store and returns a transaction hash.
-3. Press **Pay**. The app fetches a fresh quote from `/api/quote`, which calls `getLatestPrice()` and `computeQuote()` in `src/lib/pyth.ts`. The pay route checks association, calls the pricing maths, simulates the HTS NFT mint, and records the `Paid` event. Any overpayment is computed as a refund and stored on the invoice.
-4. Switch back to the seller. Press **Release**. The invoice moves to RELEASED and the `Released` event is written. (You can also press **Claim after review** once the review window has passed, or **Refund** to return the funds to the buyer.)
-5. Open `/history`. The mirror node tab shows every chain event. The HCS tab shows every audit message. Rows where the chain event and the audit message agree are marked with a check and the audit sequence number.
-
-You can publish a missing audit message from the history view by pressing the **Audit** button on a row. The route is idempotent, so pressing it twice does nothing the second time.
+The demo script runs create, pay and release end to end on testnet and prints Hashscan links for the contract, the three transactions, the NFT token and the HCS topic messages. Copy those links into `docs/testnet-evidence.md`, which holds the exact table the submission needs. Until you run it, that file documents the procedure and the link shapes so a judge can verify each one in seconds.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  Seller[Seller] -->|create invoice| App[Next.js app]
-  Buyer[Buyer] -->|associate, pay, release| App
-  App -->|quote| Pyth[Pyth Hermes]
-  App -->|state, events| DB[(Local SQLite)]
-  App -->|read events| MirrorNode[Mirror node]
-  Relayer[Relayer route] -->|verify event| MirrorNode
-  Relayer -->|publish signed audit| HCS[HCS topic]
-  Contract[FixpointEscrow] -->|mint| HTS[HTS receipt NFT]
-  Contract -->|hold, release| HBAR[Escrowed HBAR]
+  B[Buyer wallet] -->|pay plus Pyth update| C[FixpointEscrow contract]
+  C -->|read price| P[Pyth contract]
+  C -->|mint and transfer NFT| H[HTS system contract]
+  W[Next.js app] -->|Hermes price update| Y[Pyth Hermes API]
+  W -->|read logs| M[Mirror node REST]
+  W -->|server route, after verify| T[HCS audit topic]
+  M --> W
 ```
 
-The deployed template has no database. The chain is the source of truth. The relayer route reads the chain event from the mirror node, then publishes a signed, compact, versioned audit message to the HCS topic. The app reads state from the contract and from the mirror node, and uses HCS for the tamper evident history.
+The deployed template has no database. The chain is the source of truth. A relayer route reads the chain event from the mirror node, verifies it belongs to this contract, then publishes a signed, compact, versioned audit message to the HCS topic. The app reads state from the contract and the mirror node and uses HCS as the tamper evident history.
 
-HCS cannot be written from a smart contract. That is why the relayer exists. The relayer only audits. It never holds funds. It verifies the chain event first, then publishes. The chain remains the source of truth and HCS is the audit trail.
-
-This preview persists the same facts in a local SQLite database so the demo is reproducible without a live network. The schema in `prisma/schema.prisma` is a faithful local simulation of the on chain state. The history view in the preview is built from the database. In the real template it is built from the mirror node.
+HCS cannot be written from a smart contract. That is why the relayer exists. The relayer only audits. It never holds funds. It verifies the chain event first, then publishes. The local SQLite ledger in `packages/nextjs/prisma` exists only so the demo runs without a live network. It stores the same facts the mirror node would return: invoices, events, receipts and audit messages.
 
 ## How the Pyth integration works
 
-The pricing maths is the load bearing part of the contract. It lives in `src/lib/pyth.ts` and is invoked from `src/lib/invoices.ts` at pay time and from `GET /api/quote` for a live preview.
+The pricing maths is the load bearing part of the template. The contract cannot convert dollars to HBAR without it. Remove the oracle and the whole template collapses, which is exactly what makes the integration load bearing rather than decorative.
 
-The conversion mirrors `FixpointEscrow.sol` exactly:
+The conversion lives in two places that mirror each other exactly:
+
+* `packages/hardhat/contracts/FixpointEscrow.sol`, function `quoteUsdToWei`
+* `packages/nextjs/src/lib/pyth.ts`, function `computeQuote`, used at pay time and by `GET /api/quote` for the live preview
+
+The formula rounds up in favour of the seller:
 
 ```
-hbarWei = ceil( usdCents * 10^18 / (100 * price * 10^expo) )
+hbarWei = ceil(usdCents * 10^18 / (100 * price * 10^expo))
 ```
 
-The exponent is the Pyth feed exponent. For HBAR/USD it is `-8`. The numerator and denominator are scaled to keep the division integer. The result is rounded **up** in favour of the seller. The seller never receives less than the dollar amount at the published rate; the buyer may pay a rounding dust more.
+The exponent is the Pyth feed exponent, `-8` for HBAR USD. The contract uses OpenZeppelin `Math.mulDiv` with ceiling rounding and branches on the sign of the exponent so large invoices and tiny prices cannot overflow. Two safety bounds reject bad prices before the maths runs:
 
-Two safety bounds reject bad prices before the maths runs:
+* Staleness. A price older than `MAX_STALENESS_SEC` (60 seconds) is rejected. The contract reads through `getPriceNoOlderThan` so the bound is enforced at the source.
+* Confidence. A confidence wider than `MAX_CONF_BPS` (100 basis points, computed as `conf * 10000 / price`) is rejected.
 
-- **Staleness.** A price older than `MAX_STALENESS_SEC` (60 seconds) is rejected with `PRICE_REJECTED`.
-- **Confidence.** A confidence wider than `MAX_CONF_BPS` (100 basis points) is rejected with `PRICE_REJECTED`. The confidence in basis points is `conf * 10_000 / price`.
+Both constants are public in the contract and exported from `packages/nextjs/src/lib/hedera.ts`. If you touch one side, change the other in lockstep and update the tests on both sides.
 
-Both constants are exported from `src/lib/hedera.ts` and mirrored in the contract.
+The buyer can send more than the quoted total. The update fee comes from the Pyth contract through `getUpdateFee` and is paid first. Any excess is refunded to the buyer in the same call. On the demo ledger the refund is recorded on the invoice as `refundWei`.
 
-The buyer can send more than the quoted total. The overpayment is computed as `sent - quote.totalWei` and stored on the invoice as `refundWei`. The buyer is owed that refund. In the real template a pull style refund pattern is used. In this preview the refund is recorded and shown; it is not yet claimable through a separate route.
+Pyth publishes the HBAR USD feed id through Hermes. Resolve it at `https://hermes.pyth.network/v2/price_feeds?query=HBAR` and pass it as `PRICE_FEED_ID`. Since the August 2026 Pyth Core upgrade, Hermes price updates require an API key, sent as the `x-api-key` header. Set `PYTH_HERMES_KEY` to enable the live rate. Without one, the app falls back to a labelled offline seed (source `seed`) or the last good snapshot (source `cached`). The UI always shows the source. The seed is never presented as a live price.
 
-The Hermes VAA endpoint requires an API key. The metadata endpoint (`/v2/price_feeds`) is public. The VAA endpoint (`/v2/updates/price/latest`) returns 401 without an `x-api-key` header. Set `PYTH_HERMES_KEY` to enable the live rate. Without one, the app falls back to a labelled offline seed price (source `seed`). If Hermes has been reached once in the process, a cached snapshot (source `cached`) is used while the network is unreachable. The UI always shows the source. The seed price is never presented as a live Pyth price.
+## Environment variables
+
+| Name | Required | Where used | Example |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | Yes for demo | Prisma schema and client in `packages/nextjs` | `file:./dev.db` |
+| `PYTH_HERMES_KEY` | No | Hermes client in `packages/nextjs/src/lib/pyth.ts` | `pyth-...` |
+| `HEDERA_OPERATOR_ID` | For deploy only | Deploy and demo scripts in `packages/hardhat/scripts` | `0.0.1234` |
+| `HEDERA_OPERATOR_KEY` | For deploy only | Deploy and demo scripts, ECDSA key, never commit | `0x...` |
+| `PYTH_CONTRACT` | For deploy only | Pyth receiver address, defaults to the Hedera testnet receiver `0xA2aa501b19aff244D90cc15a4Cf739D2725B5729` | `0xA2aa...` |
+| `PRICE_FEED_ID` | For deploy only | HBAR USD feed id resolved through Hermes | `0x...` |
+| `HCS_TOPIC_ID` | No | Overrides the topic id used by the audit route | `0.0.5847294` |
+| `RECEIPT_TOKEN_ID` | No | Overrides the receipt token id | `0.0.5847293` |
+| `MIRROR_NODE_URL` | No | Overrides the mirror node base URL | `https://testnet.mirrornode.hedera.com/api/v1` |
+
+The committed constants in `packages/nextjs/src/lib/hedera.ts` (chain id 296 testnet, demo contract, receipt token and topic) are demo values. They are not a real deployment. The deploy script writes the real ones to `packages/hardhat/deployed/<network>.json`, which contains addresses only and no secrets.
 
 ## Project structure
 
 ```
-src/
-  lib/
-    hedera.ts         # chain config, deployed object ids, units, safety constants
-    pyth.ts           # Hermes client, pricing maths, staleness and confidence bounds
-    invoices.ts       # escrow state machine: create, pay, release, refund, audit
-    format.ts         # USD, HBAR, tinybar, weibar formatting
-    errors.ts         # typed EscrowError mirroring contract custom errors
-    kv.ts             # tiny key value store (counters, association flag)
-    db.ts             # Prisma client
-    api.ts            # typed client used by React components
-    store.ts          # Zustand actor (seller / buyer)
-    utils.ts          # cn() and helpers
-  app/
-    layout.tsx        # providers, fonts, theme
-    page.tsx          # home: hero, live price, the four step flow, honesty note
-    globals.css       # design tokens, paper, hairline utilities
-    invoices/
-      new/page.tsx    # create form with a live quote breakdown
-      [id]/page.tsx   # invoice detail: timeline, settlement, receipt, actions, audit
-    history/page.tsx  # mirror node table + HCS tab with payloads and agreement markers
-    api/
-      price/route.ts
-      quote/route.ts
-      association/route.ts
-      invoices/route.ts
-      invoices/[id]/route.ts
-      invoices/[id]/pay/route.ts
-      invoices/[id]/release/route.ts
-      invoices/[id]/claim/route.ts
-      invoices/[id]/refund/route.ts
-      invoices/[id]/claim-refund/route.ts
-      invoices/[id]/expire/route.ts
-      audit/route.ts
-      history/route.ts
-  components/         # header, footer, site-shell, price-card, state-timeline, etc.
-scripts/
-  seed.ts             # idempotent seed of the four demo invoices and audit messages
-prisma/
-  schema.prisma      # Invoice, InvoiceEvent, Receipt, AuditMessage, Kv
-.env.example
+fixpoint/
+  package.json                 # npm workspaces, scripts that delegate to packages
+  template.json                # scaffold manifest: capabilities, defaults, outro, env vars
+  README.md
+  AGENTS.md
+  SECURITY.md
+  LICENSE                      # MIT
+  .env.example                   # empty values only
+  .github/workflows/ci.yml       # install, compile, test, lint, types, build
+  packages/
+    hardhat/
+      contracts/
+        FixpointEscrow.sol      # the escrow state machine and pricing maths
+        interfaces/             # IHederaTokenService, IPyth, verified against docs
+        mocks/                 # MockHts, MockPyth, ReentrancyAttacker for tests
+      scripts/
+        deploy.ts               # deploy, create HTS collection, set receipt token
+        create-demo-transaction.ts  # full flow on testnet, prints Hashscan links
+      test/
+        FixpointEscrow.test.ts  # 43 tests: pricing, access, states, HTS, reentrancy
+      deployed/                 # addresses written by deploy, no secrets
+    nextjs/
+      src/
+        app/                   # home, invoice create and detail, history, not found
+        app/api/               # price, quote, association, invoices, audit, history
+        lib/
+          hedera.ts            # chain config, object ids, units, safety constants
+          pyth.ts              # Hermes client, pricing maths, staleness and confidence
+          invoices.ts          # escrow state machine mirroring the contract
+          format.ts            # USD, HBAR, tinybar and weibar formatting
+          errors.ts            # typed EscrowError mirroring contract custom errors
+          kv.ts                # counters and the association flag
+          db.ts                # Prisma client
+          api.ts               # typed client used by React components
+          store.ts             # role store for seller and buyer
+        components/
+          fx/                  # 3D hero scene, chain ribbon, state orb
+      prisma/schema.prisma      # local demo ledger, mirrors on chain state
+      scripts/seed.ts           # idempotent seed of four demo invoices
+  docs/
+    architecture.md
+    testnet-evidence.md
+    threat-model.md
 ```
 
-## Testing and verification
+## Testing and CI
 
-There are no automated unit tests in this preview. The build and the lint are the only static checks. State this plainly when you extend it.
-
-What we run:
+Contracts run under Hardhat with mocha and chai. The suite covers the happy path from create to release with receipt mint and fund movement, exact pricing vectors including a rounding dust case, zero and negative prices, stale prices, wide confidence, overpayment refund, underpayment revert, fee accounting, access control for every function and every wrong caller, every illegal state transition, HTS failure modes including unassociated buyer and non success response codes, double setting of the receipt token, and reentrancy attacks against pay, release and refund.
 
 ```
-bun run lint
+npm run hardhat:compile
+npm test
 ```
 
-Manual verification is done with an agent browser that walks the full flow. The check list:
+The frontend has strict TypeScript with no build error suppression, ESLint, and a production build that passes with an empty environment.
 
-- All routes return 200 with no console or runtime errors.
-- Create an invoice as the seller, switch to the buyer, associate, pay with a small buffer, and release. The state moves CREATED → PAID → RELEASED.
-- The new invoice page shows a live quote that updates as the price moves.
-- The history view shows the chain events and the matching HCS audit messages, with agreement markers.
-- Dark mode toggles. The layout is responsive at 390 by 844.
+```
+npm run check-types
+npm run lint
+npm run build
+```
 
-If you change the pricing maths or the state machine, walk this list again by hand.
+CI runs all of it on Node 20.18.3 and Node 22: install, compile, test, lint, types, build. No secrets needed.
 
 ## Extending it
 
-**Swap the price feed.** Change `HBAR_QUERY` in `src/lib/pyth.ts` and the feed match in `resolveFeedId()` to point at a different Pyth feed. Keep the staleness and confidence bounds unless you have a reason to relax them, and document the reason in the pull request.
+Swap the price feed by changing `HBAR_QUERY` and the feed match in `resolveFeedId()` in `packages/nextjs/src/lib/pyth.ts`, deploying the contract with the new feed id, and updating the pricing tests. Keep the staleness and confidence bounds unless you have a reason to relax them, and write the reason down.
 
-**Change escrow rules.** The state machine is in `src/lib/invoices.ts`. `payInvoice`, `releaseInvoice`, `claimAfterReview`, `refundInvoice`, `claimRefundIfExpired` and `expireInvoice` are the entry points. Each one writes an `InvoiceEvent`. Keep that property. History is rebuilt from the event log.
+Change the escrow rules in `FixpointEscrow.sol` and mirror them in `packages/nextjs/src/lib/invoices.ts`. New settle paths add a `SettleKind`, a contract function, a state transition, an event, and a route under `packages/nextjs/src/app/api/invoices/[id]/`. Every transition must write an event. History is rebuilt from the event log, so a silent transition is a lost transition.
 
-**Add HSS automatic release.** A Hedera Schedule Service job that releases funds automatically after the review window is a stretch goal. It is documented here, not implemented. Adding it means a new route, a new event kind, and a new contract entrypoint. Do not trigger an automatic release silently inside the existing `settle()` path.
+Hedera Schedule Service can schedule `claimAfterReview` automatically after the review window. It is documented here, not implemented. Adding it means a new contract entrypoint, a new route and a new event kind. Do not trigger automatic release silently inside the existing settle path.
 
 ## Known limits and troubleshooting
 
-- **Association is required before pay.** If you skip the associate step the pay route returns `RECEIPT_NOT_ASSOCIATED`. Press **Associate** on the invoice page or call `POST /api/association`.
-- **ED25519 accounts cannot sign EVM transactions.** The contract calls and the HTS mint go through the JSON RPC relay. Use an ECDSA account for the operator. ED25519 accounts work for HCS signing in the real template, but not for EVM calls.
-- **Mirror node lag.** The preview has no real mirror node. The history view is built from the local database. In the real template, allow a few seconds for the mirror node to ingest a transaction before the relayer verifies it.
-- **The Pyth API key requirement.** Without `PYTH_HERMES_KEY` the live VAA endpoint returns 401. The app falls back to a labelled offline seed. Get a key from https://www.pyth.network/ .
-- **The offline seed fallback.** The seed price is approximate and is never presented as a live Pyth price. The UI labels the source as `seed`. Do not ship a product that depends on the seed.
-- **On chain interactions are a faithful local simulation, not signed by a real testnet key.** The contract address, the receipt token id and the topic id in `src/lib/hedera.ts` are demo constants. No transaction in this preview reaches a real Hedera network. No HCS signature in this preview is a real Ed25519 signature. The relayer route simulates the signature with a sha256 digest so the audit shape and the idempotency can be exercised end to end.
+Association is required before pay. If the buyer skips the associate step, pay reverts with `ReceiptNotAssociated` on chain and `RECEIPT_NOT_ASSOCIATED` on the demo route. Press Associate on the invoice page or call `POST /api/association`.
+
+ED25519 accounts cannot sign EVM transactions. The contract calls go through the JSON RPC relay, so use an ECDSA account for the operator and the buyer flow. ED25519 accounts work for HCS signing but not for EVM calls.
+
+The mirror node lags a few seconds behind consensus. The history view polls with backoff and shows a pending state. Never assume a transaction is queryable instantly.
+
+The Pyth update endpoint requires an API key since the August 2026 upgrade. Without `PYTH_HERMES_KEY` the live endpoint returns 401 and the app falls back to a labelled seed. Get a key from the Pyth developer hub.
+
+The offline seed is approximate and is never presented as a live price. The UI labels the source as `seed`. Do not ship a product that depends on the seed.
+
+On chain settlement in the demo UI is a faithful local simulation. The committed object ids are demo constants. No demo transaction reaches a real Hedera network until you run the deploy and demo scripts with a funded account.
+
+Two honest deviations between the contract and the demo ledger are documented here so nobody is surprised. On chain, `claimRefundIfExpired` keys on the pay by timestamp, while the demo ledger keys on a delivery deadline field. On chain, an unassociated buyer surfaces as a generic HTS failure code, while the demo route returns a named error before any funds move. Reconcile both before mainnet use.
 
 ## Licence and credits
 
-MIT.
+MIT. See `LICENSE`.
 
-Built on Next.js 16, Prisma, Tailwind CSS 4, shadcn/ui, the Pyth Hermes API and Hedera's EVM, HTS and HCS services. The design follows the brief: dollar priced escrow, three Hedera services composed, Pyth oracle, an HTS NFT receipt, an HCS audit trail, and a relayer that only ever audits.
+Built on Hedera EVM, HTS and HCS, the Pyth oracle network, Next.js, Hardhat and OpenZeppelin contracts. The 3D hero is plain Three.js with a static fallback and full reduced motion support. The threat model lives in `docs/threat-model.md` and the security notes in `SECURITY.md`. This template is a starting point. It is not audited.

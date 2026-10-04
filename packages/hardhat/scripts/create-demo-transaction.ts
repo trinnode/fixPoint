@@ -3,7 +3,7 @@ import { join } from "path";
 import { ethers, network } from "hardhat";
 import * as dotenv from "dotenv";
 
-dotenv.config({ path: __dirname + "/.env" });
+dotenv.config({ path: __dirname + "/../.env" });
 
 // Full create -> pay -> release flow on Hedera testnet against the REAL Pyth
 // receiver. Price update bytes must be fetched off-chain first (Hermes):

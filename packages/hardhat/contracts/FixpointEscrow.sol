@@ -241,7 +241,7 @@ contract FixpointEscrow is ReentrancyGuard {
     }
 
     // hbarWei = ceil(usdCents * 1e18 / (100 * price * 10^expo)), rounded up in
-    // favour of the seller. Mirrors computeQuote in src/lib/pyth.ts exactly.
+    // favour of the seller. Mirrors computeQuote in packages/nextjs/src/lib/pyth.ts exactly.
     function quoteUsdToWei(uint256 usdCents, int64 price, uint64 conf, int32 expo)
         public
         pure

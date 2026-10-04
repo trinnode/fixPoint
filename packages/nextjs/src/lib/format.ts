@@ -78,7 +78,7 @@ export function confBps(price: bigint, conf: bigint): number {
 }
 
 export function shortHash(hash: string | null | undefined): string {
-  if (!hash) return "—";
+  if (!hash) return "…";
   if (hash.length <= 14) return hash;
   return `${hash.slice(0, 10)}…${hash.slice(-6)}`;
 }

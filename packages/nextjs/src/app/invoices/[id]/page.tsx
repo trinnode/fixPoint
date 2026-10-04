@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { StateBadge } from "@/components/state-badge";
+import { StateOrb } from "@/components/fx/state-orb";
 import { StateTimeline } from "@/components/state-timeline";
 import { AddressChip } from "@/components/address-chip";
 import { HashBadge } from "@/components/hash-badge";
@@ -81,16 +82,39 @@ export default function InvoiceDetailPage() {
         <ArrowLeft className="h-4 w-4" /> History
       </Link>
 
+      <div className="mt-4 rounded-xl border border-border bg-secondary/40 px-4 py-3" role="status">
+        {invoice.state === "CREATED" && (
+          <p className="text-sm text-foreground">
+            <span className="font-semibold">Step 2 of 3:</span> Pay at the live rate (associate then pay).
+          </p>
+        )}
+        {invoice.state === "PAID" && (
+          <p className="text-sm text-foreground">
+            <span className="font-semibold">Step 3 of 3:</span> Release or wait out review.
+          </p>
+        )}
+        {(invoice.state === "RELEASED" || invoice.state === "REFUNDED" || invoice.state === "EXPIRED") && (
+          <p className="text-sm text-foreground">
+            <span className="font-semibold">Settled.</span>{" "}
+            <Link href="/history" className="font-medium text-primary hover:underline">
+              See the audit row
+            </Link>{" "}
+            in the history view.
+          </p>
+        )}
+      </div>
+
       <header className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Invoice
           </p>
-          <div className="mt-1 flex items-center gap-3">
+          <div className="mt-1 flex flex-wrap items-center gap-4">
             <h1 className="font-display text-3xl font-medium tracking-tight text-foreground tabular-nums">
               #{invoice.numericId}
             </h1>
             <StateBadge state={invoice.state} />
+            <StateOrb state={invoice.state} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{invoice.memo}</p>
         </div>
@@ -146,7 +170,7 @@ export default function InvoiceDetailPage() {
                   <span className="tabular-nums text-foreground">{formatPrice(invoice.priceUsed!, invoice.expoUsed!, 4)}</span>
                 </Field>
                 <Field label="Publish time">
-                  <span className="tabular-nums text-foreground">{invoice.publishTs ? new Date(invoice.publishTs * 1000).toLocaleString() : "—"}</span>
+                    <span className="tabular-nums text-foreground">{invoice.publishTs ? new Date(invoice.publishTs * 1000).toLocaleString() : "…"}</span>
                 </Field>
                 <Field label="Held in escrow">
                   <span className="tabular-nums text-foreground">{formatHbar(invoice.amountWei)}</span>
@@ -179,7 +203,7 @@ export default function InvoiceDetailPage() {
                     {RECEIPT_TOKEN_SYMBOL} #{invoice.receiptSerial}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Non-fungible receipt minted by the contract and held by the buyer as proof of payment.
+                    Receipt NFT minted by the contract and held by the buyer as proof of payment.
                   </p>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-1 pt-1 text-xs">
                     <div className="flex justify-between gap-2">

@@ -1,76 +1,111 @@
 import Link from "next/link";
-import { HCS_TOPIC_ID, CONTRACT_ADDR, RECEIPT_TOKEN_ID, EXPLORER_URL } from "@/lib/hedera";
+import { CONTRACT_ADDR, HCS_TOPIC_ID, RECEIPT_TOKEN_ID } from "@/lib/hedera";
+
+const EXPLORER_ROOT = "https://hashscan.io/testnet";
+const HERMES_URL = "https://hermes.pyth.network";
+const FAUCET_URL = "https://faucet.hedera.com";
+const MIRROR_URL = "https://testnet.mirrornode.hedera.com";
+
+const columns = [
+  {
+    title: "Template",
+    links: [
+      { label: "Home", href: "/" },
+      { label: "Create an invoice", href: "/invoices/new" },
+      { label: "History", href: "/history" },
+    ],
+  },
+  {
+    title: "Flow",
+    links: [
+      { label: "Invoice details", href: "/invoices/new" },
+      { label: "Pay at rate", href: "/history" },
+      { label: "Settle and prove", href: "/history" },
+    ],
+  },
+  {
+    title: "Verify",
+    links: [
+      { label: "Open the history", href: "/history" },
+      { label: "Escrow contract on Hashscan", href: `${EXPLORER_ROOT}/contract/${CONTRACT_ADDR}` },
+      { label: "Pyth Hermes", href: HERMES_URL },
+    ],
+  },
+  {
+    title: "Network",
+    links: [
+      { label: "Hashscan testnet", href: EXPLORER_ROOT },
+      { label: "Hedera faucet", href: FAUCET_URL },
+      { label: "Mirror node", href: MIRROR_URL },
+    ],
+  },
+];
+
+function isExternal(href: string): boolean {
+  return href.startsWith("http");
+}
 
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border/80 bg-secondary/30">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div className="space-y-2">
-            <p className="font-display text-base font-medium">Fixpoint</p>
+            <p className="font-display text-lg font-semibold tracking-tight">Fixpoint</p>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Price in dollars. Settle in HBAR. Prove it on HCS. A scaffold-hbar
-              external template.
+              Price in dollars. Settle in HBAR. Prove it on HCS.
             </p>
-          </div>
-          <div className="space-y-1.5 text-xs">
-            <p className="font-medium text-foreground">Deployed objects</p>
-            <dl className="space-y-1 text-muted-foreground">
-              <div className="flex justify-between gap-3">
-                <dt>Contract</dt>
-                <dd className="font-mono truncate">{CONTRACT_ADDR.slice(0, 10)}…{CONTRACT_ADDR.slice(-4)}</dd>
+            <dl className="space-y-1 pt-1 font-mono text-[11px] text-muted-foreground tabular-nums">
+              <div className="flex gap-2">
+                <dt className="sr-only">Contract</dt>
+                <dd className="truncate">{CONTRACT_ADDR}</dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt>Receipt token</dt>
-                <dd className="font-mono">{RECEIPT_TOKEN_ID}</dd>
+              <div className="flex gap-2">
+                <dt className="sr-only">Receipt token</dt>
+                <dd>{RECEIPT_TOKEN_ID}</dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt>Audit topic</dt>
-                <dd className="font-mono">{HCS_TOPIC_ID}</dd>
+              <div className="flex gap-2">
+                <dt className="sr-only">Audit topic</dt>
+                <dd>{HCS_TOPIC_ID}</dd>
               </div>
             </dl>
           </div>
-          <div className="space-y-1.5 text-xs">
-            <p className="font-medium text-foreground">Built with</p>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>Pyth Hermes price oracle</li>
-              <li>Hedera HTS NFT receipts</li>
-              <li>Hedera Consensus Service audit log</li>
-            </ul>
-          </div>
-          <div className="space-y-1.5 text-xs">
-            <p className="font-medium text-foreground">Explore</p>
-            <ul className="space-y-1">
-              <li>
-                <Link href="/history" className="text-muted-foreground underline-offset-2 hover:underline">
-                  Mirror node history
-                </Link>
-              </li>
-              <li>
-                <Link href="/invoices/new" className="text-muted-foreground underline-offset-2 hover:underline">
-                  Create an invoice
-                </Link>
-              </li>
-              <li>
-                <a
-                  href={EXPLORER_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground underline-offset-2 hover:underline"
-                >
-                  Hashscan ↗
-                </a>
-              </li>
-            </ul>
-          </div>
+          {columns.map((col) => (
+            <nav key={col.title} aria-label={col.title}>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">
+                {col.title}
+              </p>
+              <ul className="mt-3 space-y-2 text-xs">
+                {col.links.map((l) => (
+                  <li key={l.label + l.href}>
+                    {isExternal(l.href) ? (
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                      >
+                        {l.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={l.href}
+                        className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                      >
+                        {l.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
-        <div className="mt-6 border-t border-border/70 pt-4">
+        <div className="mt-8 border-t border-border/70 pt-4">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            The chain events are the source of truth. The HCS topic is an ordered,
-            timestamped audit log, not a database. The relayer verifies each
-            transaction on the mirror node before it publishes. On chain
-            interactions in this preview are simulated against the live Pyth
-            rate, not signed by a real testnet key.
+            The contract address, token id and topic id shown here are demo
+            constants, not a real deployment. The chain events are the source
+            of truth and the HCS topic is the audit log.
           </p>
         </div>
       </div>
