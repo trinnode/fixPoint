@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type HistoryRow } from "@/lib/api";
+import { LiveHistory } from "@/components/live-history";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ export default function HistoryPage() {
           <TabsList>
             <TabsTrigger value="events">Mirror node ({data.events.length})</TabsTrigger>
             <TabsTrigger value="audit">HCS topic ({data.audit.length})</TabsTrigger>
+            <TabsTrigger value="live">Live contract</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events">
@@ -155,6 +157,10 @@ export default function HistoryPage() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="live">
+            <LiveHistory />
           </TabsContent>
         </Tabs>
       )}

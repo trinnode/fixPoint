@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
+import { WalletProvider } from "@/components/wallet-provider";
 import { SiteShell } from "@/components/site-shell";
 
 const display = Space_Grotesk({
@@ -59,7 +60,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <SiteShell>{children}</SiteShell>
+            <WalletProvider>
+              <SiteShell>{children}</SiteShell>
+            </WalletProvider>
             <Toaster />
             <Sonner />
           </QueryProvider>

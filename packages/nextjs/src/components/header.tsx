@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { WalletButton } from "@/components/wallet-button";
 import { CHAIN_NAME } from "@/lib/hedera";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +53,11 @@ export function Header() {
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
             {CHAIN_NAME} · simulation
           </span>
+          <WalletButton />
           <div className="hidden sm:block">
+            <p className="mb-1 text-right text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              Demo role
+            </p>
             <RoleSwitcher />
           </div>
           <ThemeToggle />
@@ -78,8 +83,14 @@ export function Header() {
             </Link>
           );
         })}
-        <div className="ml-auto">
-          <RoleSwitcher />
+        <div className="ml-auto flex items-center gap-2">
+          <WalletButton />
+          <div>
+            <p className="mb-1 text-right text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              Demo role
+            </p>
+            <RoleSwitcher />
+          </div>
         </div>
       </nav>
     </header>

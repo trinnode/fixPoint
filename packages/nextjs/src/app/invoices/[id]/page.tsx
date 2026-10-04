@@ -1,9 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { LiveInvoiceView } from "@/components/live-invoice-view";
 import { StateBadge } from "@/components/state-badge";
 import { StateOrb } from "@/components/fx/state-orb";
 import { StateTimeline } from "@/components/state-timeline";
@@ -22,6 +24,24 @@ import {
 import { formatHbar, formatPrice, formatUsd } from "@/lib/format";
 
 export default function InvoiceDetailPage() {
+  return (
+    <Suspense fallback={<p className="mx-auto max-w-6xl px-4 py-10 text-sm text-muted-foreground sm:px-6">Loading invoice</p>}>
+      <DetailRouter />
+    </Suspense>
+  );
+}
+
+function DetailRouter() {
+  const params = useParams<{ id: string }>();
+  const search = useSearchParams();
+  const numeric = Number(params.id);
+  if (search.get("live") === "1" && Number.isInteger(numeric) && numeric >= 0) {
+    return <LiveInvoiceView id={numeric} />;
+  }
+  return <DemoDetailPage />;
+}
+
+function DemoDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
 

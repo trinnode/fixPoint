@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { LiveCreatePanel } from "@/components/live-create-panel";
 import { QuoteBreakdown } from "@/components/quote-breakdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,17 @@ export default function NewInvoicePage() {
   const quote = quoteQ.data ?? null;
   const quoteError = quoteQ.isError ? (quoteQ.error as Error).message : null;
   const quoteLoading = quoteQ.isFetching;
+
+  const liveProps = useMemo(() => {
+    const cents = Math.round(parseFloat(amount) * 100);
+    const payByTs = payBy ? Math.floor(new Date(payBy).getTime() / 1000) : 0;
+    const valid =
+      Number.isFinite(cents) &&
+      cents > 0 &&
+      cents <= 100_000_000 &&
+      payByTs > Math.floor(Date.now() / 1000);
+    return { usdCents: cents, payByTs, reviewSec: Number(reviewSec), valid };
+  }, [amount, payBy, reviewSec]);
 
   const create = useMutation({
     mutationFn: () => {
@@ -142,6 +154,14 @@ export default function NewInvoicePage() {
           The buyer will pay HBAR at the live Pyth rate shown here.
         </p>
       </header>
+
+      <LiveCreatePanel
+        usdCents={liveProps.usdCents}
+        payByTs={liveProps.payByTs}
+        reviewSec={liveProps.reviewSec}
+        memo={memo}
+        formValid={liveProps.valid}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <form

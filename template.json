@@ -54,6 +54,22 @@
     },
     "envVars": [
       {
+        "key": "NEXT_PUBLIC_WC_PROJECT_ID",
+        "description": "WalletConnect cloud project id for HashPack pairing (demo mode works without it)"
+      },
+      {
+        "key": "NEXT_PUBLIC_CONTRACT_ADDRESS",
+        "description": "Live contract for wallet reads and writes, defaults to the testnet deployment"
+      },
+      {
+        "key": "NEXT_PUBLIC_RECEIPT_TOKEN_ID",
+        "description": "HTS receipt token for wallet pay with mint, empty until the collection exists"
+      },
+      {
+        "key": "NEXT_PUBLIC_HCS_TOPIC_ID",
+        "description": "HCS audit topic shown in wallet flows"
+      },
+      {
         "key": "DATABASE_URL",
         "description": "SQLite file for the local demo ledger (no database in the deployed template)"
       },
