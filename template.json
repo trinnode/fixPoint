@@ -1,0 +1,90 @@
+{
+  "name": "fixpoint",
+  "description": "USD-priced escrow on Hedera: invoices in dollars, payment in HBAR at a live Pyth rate, HTS NFT receipts, HCS audit trail.",
+  "create-scaffold-hbar": {
+    "capabilities": {
+      "frontend": ["nextjs-app"],
+      "solidityFramework": ["hardhat"],
+      "packageManager": ["yarn", "npm"]
+    },
+    "defaults": {
+      "frontend": "nextjs-app",
+      "solidityFramework": "hardhat",
+      "packageManager": "npm"
+    },
+    "outro": {
+      "sections": [
+        {
+          "title": "Next steps",
+          "steps": [
+            {
+              "label": "Install dependencies",
+              "command": "{pm} install"
+            },
+            {
+              "label": "Compile the escrow contract",
+              "command": "{run:hardhat:compile}"
+            },
+            {
+              "label": "Run the contract tests",
+              "command": "{run:hardhat:test}"
+            },
+            {
+              "label": "Create the local demo database",
+              "command": "{run:db:push}"
+            },
+            {
+              "label": "Seed the demo invoices",
+              "command": "{run:db:seed}"
+            },
+            {
+              "label": "Start the frontend",
+              "command": "{run:next:dev}"
+            },
+            {
+              "text": "For Hedera testnet deploy and verify, see docs/testnet-evidence.md and packages/hardhat/README.md."
+            }
+          ]
+        }
+      ]
+    },
+    "envVars": [
+      {
+        "key": "DATABASE_URL",
+        "description": "SQLite file for the local demo ledger (no database in the deployed template)"
+      },
+      {
+        "key": "PYTH_HERMES_KEY",
+        "description": "Optional Pyth Hermes API key, sent as x-api-key. Without it the app shows a labelled offline seed price"
+      },
+      {
+        "key": "HEDERA_OPERATOR_ID",
+        "description": "Testnet operator account for deploy and relayer scripts (ECDSA account, never commit)"
+      },
+      {
+        "key": "HEDERA_OPERATOR_KEY",
+        "description": "Testnet operator private key for deploy and relayer scripts (never commit)"
+      },
+      {
+        "key": "PYTH_CONTRACT",
+        "description": "Pyth receiver contract address (defaults to the Hedera testnet receiver)"
+      },
+      {
+        "key": "PRICE_FEED_ID",
+        "description": "Pyth HBAR/USD feed id (resolve via Hermes price_feeds?query=HBAR)"
+      },
+      {
+        "key": "HCS_TOPIC_ID",
+        "description": "Override for the HCS audit topic id"
+      },
+      {
+        "key": "RECEIPT_TOKEN_ID",
+        "description": "Override for the HTS receipt token id"
+      },
+      {
+        "key": "MIRROR_NODE_URL",
+        "description": "Override for the mirror node REST base URL"
+      }
+    ]
+  }
+}

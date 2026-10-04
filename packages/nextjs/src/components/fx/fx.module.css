@@ -1,0 +1,274 @@
+/* Fixpoint depth layer — component-scoped tokens and treatments.
+ *
+ * Extends the app palette defined in globals.css: the signature accent is
+ * var(--accent); these --fx-* tokens only add the deep-space field, line work,
+ * and glass surfaces needed for the Web3 hero. No neon gradients, no emojis.
+ */
+
+.hero {
+  --fx-bg: oklch(0.21 0.022 262);
+  --fx-bg-2: oklch(0.265 0.028 258);
+  --fx-line: oklch(0.72 0.06 235);
+  --fx-accent: var(--accent);
+  --fx-ink: oklch(0.965 0.006 81);
+  --fx-muted: oklch(0.8 0.016 235);
+  --fx-card: color-mix(in oklab, white 7%, transparent);
+  --fx-card-border: color-mix(in oklab, white 15%, transparent);
+  --fx-panel: color-mix(in oklab, white 4%, transparent);
+
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  color: var(--fx-ink);
+  background:
+    radial-gradient(
+      1100px 480px at 78% -12%,
+      color-mix(in oklab, var(--fx-line) 13%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      820px 460px at 8% 112%,
+      color-mix(in oklab, var(--fx-accent) 9%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--fx-bg-2), var(--fx-bg));
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  margin-inline: auto;
+  max-width: 72rem;
+  padding: 4rem 1rem;
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .heroInner {
+    padding: 5rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heroInner {
+    grid-template-columns: 1.15fr 1fr;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* 3D scene layer: static gradient fallback sits behind the canvas. */
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+.sceneHost {
+  position: absolute;
+  inset: 0;
+}
+
+.sceneCanvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sceneFallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      640px 340px at 68% 30%,
+      color-mix(in oklab, var(--fx-line) 10%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      480px 300px at 22% 78%,
+      color-mix(in oklab, var(--fx-accent) 8%, transparent),
+      transparent 62%
+    );
+}
+
+/* Glass side panel holding the price card and deployed objects. */
+.glass {
+  background: var(--fx-card);
+  border: 1px solid var(--fx-card-border);
+  border-radius: 1rem;
+  padding: 0.9rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 24px 60px -32px rgb(0 0 0 / 0.55);
+}
+
+.panel {
+  border: 1px solid var(--fx-card-border);
+  border-radius: 0.75rem;
+  background: var(--fx-panel);
+  padding: 1rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--fx-card-border);
+  background: var(--fx-panel);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--fx-muted);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Secondary CTA on the dark field: glass outline with a clear keyboard ring. */
+.ctaAlt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--fx-card-border);
+  background: var(--fx-panel);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fx-ink);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.ctaAlt:hover {
+  background: color-mix(in oklab, white 10%, transparent);
+}
+
+.ctaAlt:focus-visible {
+  outline: 2px solid var(--fx-accent);
+  outline-offset: 3px;
+}
+
+/* Slim chain-facts marquee: pure CSS, pauses on hover, static when reduced. */
+.ribbon {
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.ribbonTrack {
+  display: flex;
+  width: max-content;
+  animation: fx-marquee 32s linear infinite;
+}
+
+.ribbon:hover .ribbonTrack {
+  animation-play-state: paused;
+}
+
+.ribbonRow {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 0.55rem 1.25rem 0.55rem 1.25rem;
+  margin: 0;
+  list-style: none;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.dot {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@keyframes fx-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Canvas-free CSS 3D state orb (unwired; orchestrator wires into pages later). */
+.orbWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.orbScene {
+  perspective: 600px;
+  flex: none;
+}
+
+.orb {
+  --fx-orb-color: oklch(0.62 0.02 75);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      circle at 32% 28%,
+      rgb(255 255 255 / 0.9) 0%,
+      rgb(255 255 255 / 0) 26%
+    ),
+    radial-gradient(
+      circle at 50% 56%,
+      var(--fx-orb-color) 0%,
+      color-mix(in oklab, var(--fx-orb-color) 52%, black) 80%
+    );
+  box-shadow:
+    0 10px 26px -10px var(--fx-orb-color),
+    inset -6px -8px 16px rgb(0 0 0 / 0.35),
+    inset 4px 6px 12px rgb(255 255 255 / 0.25);
+  transform: rotateX(12deg) rotateY(-18deg);
+  animation: fx-orb-drift 7s ease-in-out infinite;
+}
+
+.orbCreated {
+  --fx-orb-color: oklch(0.78 0.14 70);
+}
+
+.orbPaid {
+  --fx-orb-color: oklch(0.68 0.14 250);
+}
+
+.orbReleased {
+  --fx-orb-color: oklch(0.68 0.13 155);
+}
+
+.orbRefunded {
+  --fx-orb-color: oklch(0.62 0.02 75);
+}
+
+.orbExpired {
+  --fx-orb-color: oklch(0.62 0.17 30);
+}
+
+@keyframes fx-orb-drift {
+  50% {
+    transform: rotateX(-8deg) rotateY(14deg) translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ribbonTrack {
+    animation: none;
+  }
+  .ribbon {
+    overflow-x: auto;
+  }
+  .orb {
+    animation: none;
+    transform: rotateX(12deg) rotateY(-18deg);
+  }
+}

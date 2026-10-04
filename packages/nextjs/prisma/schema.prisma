@@ -1,0 +1,93 @@
+// Fixpoint data model.
+//
+// This schema is a faithful local simulation of the on-chain state in
+// FixpointEscrow.sol. There is no database in the deployed template. History is
+// rebuilt from the mirror node contract logs. Here we persist the same facts so
+// the demo is reproducible without a live network.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  numericId   Int      @unique
+  sellerAddr  String
+  buyerAddr   String?
+  usdCents    Int
+  payByTs     Int
+  reviewSec   Int
+  deliveryTs  Int?
+  paidAt      Int?
+  amountWei   String?
+  feeWei      String?
+  refundWei   String?
+  priceUsed   String?
+  confUsed    String?
+  expoUsed    Int?
+  publishTs   Int?
+  metaHash    String
+  memo        String
+  state       String
+  receiptSerial Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events  InvoiceEvent[]
+  receipt Receipt?
+
+  @@index([state])
+  @@index([sellerAddr])
+}
+
+model InvoiceEvent {
+  id        String   @id @default(cuid())
+  invoiceId String
+  kind      String
+  txHash    String
+  actor     String?
+  counter   String?
+  amountWei String?
+  blockTs   Int
+  createdAt DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([txHash])
+}
+
+model Receipt {
+  id        String   @id @default(cuid())
+  invoiceId String   @unique
+  tokenId   String
+  serial    Int      @unique
+  owner     String
+  metaRef   String
+  mintTx    String
+  mintedAt  DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model AuditMessage {
+  id        String   @id @default(cuid())
+  topicId   String
+  seq       Int
+  txHash    String   @unique
+  payload   String
+  sig       String
+  createdAt DateTime @default(now())
+
+  @@index([topicId])
+}
+
+model Kv {
+  key   String @id
+  value String
+}

@@ -1,0 +1,31 @@
+{
+  "name": "fixpoint",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fixpoint: USD-priced escrow on Hedera. Price in dollars, settle in HBAR, prove it on HCS.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/hardhat",
+    "packages/nextjs"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @fixpoint/nextjs",
+    "build": "npm run build -w @fixpoint/nextjs",
+    "start": "npm run start -w @fixpoint/nextjs",
+    "lint": "npm run lint -w @fixpoint/nextjs && npm run lint -w @fixpoint/contracts",
+    "check-types": "npm run check-types -w @fixpoint/nextjs && npm run lint -w @fixpoint/contracts",
+    "test": "npm run test -w @fixpoint/contracts",
+    "hardhat:compile": "npm run compile -w @fixpoint/contracts",
+    "hardhat:test": "npm run test -w @fixpoint/contracts",
+    "hardhat:deploy": "npm run deploy -w @fixpoint/contracts --",
+    "next:dev": "npm run dev -w @fixpoint/nextjs",
+    "next:build": "npm run build -w @fixpoint/nextjs",
+    "next:lint": "npm run lint -w @fixpoint/nextjs",
+    "db:push": "npm run db:push -w @fixpoint/nextjs",
+    "db:seed": "npm run db:seed -w @fixpoint/nextjs"
+  },
+  "engines": {
+    "node": ">=20.18.3",
+    "npm": ">=10"
+  }
+}

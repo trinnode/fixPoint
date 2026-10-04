@@ -1,0 +1,28 @@
+{
+  "name": "@fixpoint/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fixpoint escrow contracts: USD-priced HBAR escrow on Hedera (Pyth pricing, HTS receipt NFT)",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts --network hederaTestnet",
+    "demo": "hardhat run scripts/create-demo-transaction.ts --network hederaTestnet",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "2.0.8",
+    "@nomicfoundation/hardhat-ethers": "3.0.9",
+    "@openzeppelin/contracts": "^5.0.0",
+    "@pythnetwork/pyth-sdk-solidity": "^4.0.0",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "chai": "^4.4.0",
+    "dotenv": "^16.0.0",
+    "ethers": "^6.0.0",
+    "hardhat": "2.22.19",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.4.0"
+  }
+}
